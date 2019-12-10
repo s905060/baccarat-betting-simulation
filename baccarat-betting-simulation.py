@@ -17,27 +17,27 @@ class Baccarat():
     def __init__(self, shoe):
         self.banker_value = 0
         self.player_value = 0
-        self.player_3rd_card_value = 0
+        self.banker_1st_card_value = 0
+        self.banker_2nd_card_value = 0
+        self.banker_3rd_card_value = 999
+        self.player_1st_card_value = 0
+        self.player_2rd_card_value = 0
+        self.player_3rd_card_value = 999
         self.shoe = shoe
         self.number_of_player_win = 0
         self.number_of_banker_win = 0
         self.number_of_tie = 0
 
-    # def reset(self):
-    #     self.banker_value = 0
-    #     self.player_value = 0
-    #     self.player_3rd_card_value = 0
-    #     self.number_of_player_win = 0
-    #     self.number_of_banker_win = 0
-    #     self.number_of_tie = 0
-    
     def start_game(self):
-        self.player_value = self.convert_value(self.shoe.pop() + self.shoe.pop())
-        self.banker_value = self.convert_value(self.shoe.pop() + self.shoe.pop())
+        self.banker_1st_card_value = self.shoe.pop()
+        self.banker_2nd_card_value = self.shoe.pop()
+        self.player_value = self.convert_value(self.banker_1st_card_value + self.banker_2nd_card_value)
+        self.player_1st_card_value = self.shoe.pop()
+        self.player_2nd_card_value = self.shoe.pop()
+        self.banker_value = self.convert_value(self.player_1st_card_value + self.player_2nd_card_value)
         self.check_player_rule()
         self.check_banker_rule()
-        # self.check_result()
-        return self.player_value, self.banker_value
+        return self.player_value, self.banker_value, self.banker_1st_card_value, self.banker_2nd_card_value, self.banker_3rd_card_value, self.player_1st_card_value, self.player_2nd_card_value, self.player_3rd_card_value
     
     def convert_value(self, card_value):
         if card_value >= 10:
@@ -54,8 +54,8 @@ class Baccarat():
         """
         if self.player_value in [1,2,3,4,5,0]:
             self.player_3rd_card_value = self.shoe.pop()
-            #print('Player Card Value: %s' % str(self.player_value))
-            #print('Player 3rd Card Value: %s' % str(self.player_3rd_card_value))
+            # print('Player Card Value: %s' % str(self.player_value))
+            # print('Player 3rd Card Value: %s' % str(self.player_3rd_card_value))
             self.player_value = self.convert_value(self.player_value + self.player_3rd_card_value)
         elif self.player_value in [6,7,8,9]:
             self.player_value = self.player_value
@@ -74,32 +74,26 @@ class Baccarat():
         0-1-2	 Always draws 
         """
         if self.banker_value in [0,1,2]:
-            self.banker_value = self.convert_value(self.banker_value + self.shoe.pop())
+            self.banker_3rd_card_value = self.shoe.pop()
+            self.banker_value = self.convert_value(self.banker_value + self.banker_3rd_card_value)
         elif self.banker_value in [7,8,9]:
             self.banker_value = self.banker_value
         elif self.banker_value == 3:
             if self.player_3rd_card_value in [1,2,3,4,5,6,7,9,0]:
-                self.banker_value = self.convert_value(self.banker_value + self.shoe.pop())
+                self.banker_3rd_card_value = self.shoe.pop()
+                self.banker_value = self.convert_value(self.banker_value + self.banker_3rd_card_value)
         elif self.banker_value == 4:
             if self.player_3rd_card_value in [2,3,4,5,6,7]:
-                self.banker_value = self.convert_value(self.banker_value + self.shoe.pop())
+                self.banker_3rd_card_value = self.shoe.pop()
+                self.banker_value = self.convert_value(self.banker_value + self.banker_3rd_card_value)
         elif self.banker_value == 5:
             if self.player_3rd_card_value in [4,5,6,7]:
-                self.banker_value = self.convert_value(self.banker_value + self.shoe.pop())
+                self.banker_3rd_card_value = self.shoe.pop()
+                self.banker_value = self.convert_value(self.banker_value + self.banker_3rd_card_value)
         elif self.banker_value == 6:
             if self.player_3rd_card_value in [6,7]:
-                self.banker_value = self.convert_value(self.banker_value + self.shoe.pop())
-
-    # def check_result(self):
-    #     if self.player_value > self.banker_value:
-    #         print('Player WIN B: %s, P: %s' % (str(self.banker_value), str(self.player_value)))
-    #         self.number_of_player_win += 1
-    #     elif self.player_value < self.banker_value:
-    #         print('Banker WIN B: %s, P: %s' % (str(self.banker_value), str(self.player_value)))
-    #         self.number_of_banker_win += 1
-    #     elif self.player_value == self.banker_value:
-    #         print('It\'s a TIE B: %s, P: %s' % (str(self.banker_value), str(self.player_value)))
-    #         self.number_of_tie += 1
+                self.banker_3rd_card_value = self.shoe.pop()
+                self.banker_value = self.convert_value(self.banker_value + self.banker_3rd_card_value)
 
 def print_status():
     print('======== Result ========')
@@ -111,7 +105,7 @@ def print_status():
     print 'start_bankroll: %s' % str(start_bankroll)
     print 'final_bankroll: %s' % str(bankroll)
     print 'number_of_bet: %s' % str(number_of_bet)
-    print '流水： %s' % str(number_of_bet*bet)
+    print 'Total_bet_value： %s' % str(number_of_bet*bet)
     print 'House edge： %s' % str(number_of_bet*bet*0.0106)
     print 'Real Loss： %s' % str(float(start_bankroll-bankroll))
     print 'i_bet_number_of_banker_win: %s' % str(i_bet_number_of_banker_win) 
@@ -129,16 +123,15 @@ if __name__ == '__main__':
     number_of_hand = 0
     bankroll = 1500
     start_bankroll = bankroll
-    bet = 25
-
+    bet = 100
     number_of_win = 0
     number_of_total_loss = 0
     i_bet_number_of_banker_win = 0
     i_bet_number_of_player_win = 0
     number_of_push = 0
     number_of_bet = 0
-
-    max_number_of_hand = 300
+    max_number_of_hand = 1000
+    running_count_threhold = 30
 
     # 若前二手之差距递减，则下一手下注于最后胜的一方；若差距递增，则下一手下注于最后输的一方。
 
@@ -153,47 +146,54 @@ if __name__ == '__main__':
         last_2_hand_value = 0
         inner_shoe_win = 0
         inner_shoe_loss = 0
+        running_card_counting = 0
         while len(shoe.shoe) >= 14:
+            # print 'running_card_counting: %s' % str(running_card_counting)
             game = Baccarat(shoe.shoe)
             if bankroll < bet:
                 print('I\'m broke... Money: %s' % str(bankroll))
                 print_status()
                 exit(1)
-            elif inner_hand > 1:
-
-                if inner_shoe_win - inner_shoe_loss >= 1000:
-                    bet_banker = 0
-                    bet_player = 0
-                elif last_2_hand_value > last_hand_value:
-                    # Bet last_winner
-                    if last_winner == 1:
-                        bet_banker = 1
-                    elif last_winner == 2:
-                        bet_player = 1
-                elif last_2_hand_value < last_hand_value:
-                    # Bet last_loser
-                    if last_winner == 1:
-                        bet_player = 1
-                    elif last_winner == 2:
-                        bet_banker = 1
-
-                if bet_player == 1:
-                    bankroll -= bet
-                    number_of_bet += 1
-                    # print 'Bet $%s on Player' % str(bet)
-                elif bet_banker == 1:
-                    bankroll -= bet
-                    number_of_bet += 1
-                    # print 'Bet $%s on Banker' % str(bet)
-            # elif last_winner == 1:
-            #     bankroll -= bet
-            #     bet_banker = 1
-            #     print 'Bet $%s on Banker' % str(bet)
             else:
-                pass
+                if running_card_counting <= -running_count_threhold:
+                    bankroll -= bet
+                    number_of_bet += 1
+                    bet_player = 1
+                    # print 'Bet $%s on Player' % str(bet)
+                elif running_card_counting >= running_count_threhold:
+                    bankroll -= bet
+                    number_of_bet += 1
+                    bet_banker = 1
+            # elif inner_hand > 1:
+            #     pass
+                # if inner_shoe_win - inner_shoe_loss >= 1000:
+                #     bet_banker = 0
+                #     bet_player = 0
+                # elif last_2_hand_value > last_hand_value:
+                #     # Bet last_winner
+                #     if last_winner == 1:
+                #         bet_banker = 1
+                #     elif last_winner == 2:
+                #         bet_player = 1
+                # elif last_2_hand_value < last_hand_value:
+                #     # Bet last_loser
+                #     if last_winner == 1:
+                #         bet_player = 1
+                #     elif last_winner == 2:
+                #         bet_banker = 1
+                # if bet_player == 1:
+                #     bankroll -= bet
+                #     number_of_bet += 1
+                #     # print 'Bet $%s on Player' % str(bet)
+                # elif bet_banker == 1:
+                #     bankroll -= bet
+                #     number_of_bet += 1
+                #     # print 'Bet $%s on Banker' % str(bet)
+            # else:
+            #     pass
                 # print 'Skip Bet...'
 
-            player_value, banker_value = game.start_game()
+            player_value, banker_value, banker_1st_card_value, banker_2nd_card_value, banker_3rd_card_value, player_1st_card_value, player_2nd_card_value, player_3rd_card_value = game.start_game()
             if player_value > banker_value:
                 # print('Player WIN B: %s, P: %s' % (str(banker_value), str(player_value)))
                 number_of_player_win += 1
@@ -250,6 +250,25 @@ if __name__ == '__main__':
                 last_hand_value = abs(banker_value-player_value)
                 # print 'last_hand_value: %s'  % str(last_hand_value)
 
+            '''
+            DEALT CARD WHAT TO DO
+
+            A, 2, 3 Add (+) 1
+            4 Add (+) 2
+            5, 7, 8 Subtract (-) 1
+            6 Subtract (-) 2
+            9, 10, J, Q, K
+            Neutral – don’t do anything
+            '''
+            for card in [banker_1st_card_value, banker_2nd_card_value, banker_3rd_card_value, player_1st_card_value, player_2nd_card_value, player_3rd_card_value]:
+                if card in [1,2,3]:
+                    running_card_counting += 1
+                elif card in [4]:
+                    running_card_counting += 2
+                elif card in [5,7,8]:
+                    running_card_counting -= 1
+                elif card in [6]:
+                    running_card_counting -= 2
             # print "Bankroll %s" % str(bankroll)
             inner_hand += 1
             number_of_hand += 1
